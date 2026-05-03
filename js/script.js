@@ -26,9 +26,8 @@ menuToggle.addEventListener('click', () => {
     menuToggle.textContent = navMenu.classList.contains('active') ? 'CLOSE' : 'MENU';
 });
 
-// Hide UI during intro
+// Hide UI header/footer visually during intro — pointer-events handled by CSS
 uiOverlay.style.opacity = '0';
-uiOverlay.style.pointerEvents = 'none';
 
 // =========================================
 // SCENE STATE
@@ -359,10 +358,8 @@ function finishIntro() {
     // Show home scene content
     document.getElementById('scene-home').classList.add('active');
 
-    // Fade in the UI (logo, menu, progress)
-    gsap.to(uiOverlay, { opacity: 1, duration: 1.0, ease: 'power2.out', onStart: () => {
-        uiOverlay.style.pointerEvents = 'auto';
-    }});
+    // Fade in the UI — pointer-events stay on CSS children only, never on the overlay itself
+    gsap.to(uiOverlay, { opacity: 1, duration: 1.0, ease: 'power2.out' });
 }
 
 // Skip button
