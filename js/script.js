@@ -399,7 +399,7 @@ function goToScene(index) {
       .to(starMat,       { size: 0.18, opacity: 0.3, duration: 0.9, ease: 'power2.out' }, 1.4);
 }
 
-// Navigation events
+// Navigation links
 navLinks.forEach((link, i) => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -409,17 +409,23 @@ navLinks.forEach((link, i) => {
     });
 });
 
-document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-next], #btn-explore');
-    if (!btn) return;
-    const nextId = btn.dataset.next;
-    if (nextId) {
+// Direct listeners on every NEXT / EXPLORE button at load time
+document.querySelectorAll('[data-next]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nextId = btn.dataset.next;
         const idx = scenes.indexOf(nextId);
         if (idx !== -1) goToScene(idx);
-    } else if (btn.id === 'btn-explore') {
-        goToScene(1);
-    }
+    });
 });
+
+const btnExplore = document.getElementById('btn-explore');
+if (btnExplore) {
+    btnExplore.addEventListener('click', (e) => {
+        e.stopPropagation();
+        goToScene(1);
+    });
+}
 
 document.getElementById('nav-home')?.addEventListener('click', (e) => { e.preventDefault(); goToScene(0); });
 
