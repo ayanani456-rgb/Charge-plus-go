@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charge + Go | Never Lose Charge on Campus</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --neon-teal: #00F0FF;
+            --neon-teal-dim: rgba(0, 240, 255, 0.15);
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-radius: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none;
+        }
+
+        /* --- Video Background --- */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        #hero-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transform: scale(1.05); /* Avoids edges showing during minor shifts */
+            filter: contrast(1.1) brightness(0.9);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Gradient to ensure text readability while fading into solid background below */
+            background: linear-gradient(
+                to bottom, 
+                rgba(5, 5, 5, 0.2) 0%, 
+                rgba(5, 5, 5, 0.5) 60%, 
+                var(--bg-dark) 100%
+            );
+            z-index: 1;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            transition: background 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo span {
+            color: var(--neon-teal);
+        }
+
+        .menu-toggle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .menu-toggle:hover {
+            background: var(--neon-teal-dim);
+            color: var(--neon-teal);
+            border-color: var(--neon-teal);
+        }
+
+        /* --- Main Layout --- */
+        main {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5%;
+            padding-top: 10vh;
+        }
+
+        .hero-content {
+            max-width: 650px;
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .price-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.6rem 1.2rem;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--neon-teal);
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            letter-spacing: 0.5px;
+        }
+
+        .price-badge i {
+            font-size: 0.85rem;
+        }
+
+        .headline {
+            font-size: clamp(3.5rem, 8vw, 5.5rem);
+            line-height: 1.05;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #B0B0B0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .subheadline {
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            max-width: 480px;
+            line-height: 1.6;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1.2rem 2.5rem;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            border: none;
+            letter-spacing: 0.5px;
+        }
+
+        .primary-btn {
+            background: var(--neon-teal);
+            color: #000;
+            box-shadow: 0 8px 32px rgba(0, 240, 255, 0.3);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 240, 255, 0.5);
+            background: #2effff;
+        }
+
+        .secondary-btn {
+            background: var(--glass-bg);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
+
+        /* --- How It Works Section --- */
+        .how-it-works {
+            padding: 8rem 5%;
+            background: var(--bg-dark);
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-subtitle {
+            color: var(--neon-teal);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+        }
+
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius);
+            padding: 3rem 2.5rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Ambient Glow effect inside card */
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            background: var(--neon-teal);
+            filter: blur(80px);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .step-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 240, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .step-card:hover::before {
+            opacity: 0.4;
+        }
+
+        .step-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-icon-wrapper {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--neon-teal-dim);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+            transition: transform 0.4s ease;
+        }
+
+        .step-card:hover .step-icon-wrapper {
+            transform: scale(1.1);
+            background: rgba(0, 240, 255, 0.2);
+        }
+
+        .step-icon {
+            font-size: 2.2rem;
+            color: var(--neon-teal);
+            filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+        }
+
+        .step-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .step-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- Animations --- */
+        @keyframes slideUpFade {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scroll Reveal Utility */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            .hero {
+                align-items: center;
+                text-align: center;
+            }
+
+            .subheadline {
+                margin: 0 auto 3rem auto;
+            }
+
+            .cta-group {
+                flex-direction: column;
+                width: 100%;
+                max-width: 350px;
+                margin: 0 auto;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 1.2rem;
+            }
+
+            .steps-container {
+                gap: 1.5rem;
+            }
+            
+            nav {
+                padding: 1rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Background Container -->
+    <div class="video-container">
+        <!-- We point to the unzipped video file -->
+        <video autoplay loop muted playsinline id="hero-video">
+            <source src="assets/video/make_them_come_back_as_202605141645.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="logo">
+            <i class="fas fa-battery-full" style="color: var(--neon-teal);"></i>
+            CHARGE<span>+</span>GO
+        </div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="price-badge">
+                    <i class="fas fa-tag"></i>
+                    PKR 200 Rental Fee
+                </div>
+                <h1 class="headline">Never Lose Charge <br>on Campus.</h1>
+                <p class="subheadline">Drop the heavy power banks. Grab a smart charger instantly, juice up, and drop it off anywhere.</p>
+                
+                <div class="cta-group">
+                    <button class="btn primary-btn">
+                        <i class="fas fa-qrcode"></i> Scan to Unlock
+                    </button>
+                    <button class="btn secondary-btn">
+                        <i class="fas fa-map-marker-alt"></i> Find a Kiosk
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works">
+            <div class="section-header reveal">
+                <span class="section-subtitle">Simple Process</span>
+                <h2 class="section-title">How It Works</h2>
+            </div>
+            
+            <div class="steps-container">
+                
+                <!-- Step 1 -->
+                <div class="step-card reveal" style="transition-delay: 0.1s;">
+                    <div class="step-icon-wrapper">
+                        <i class="fas fa-expand step-icon"></i>
+                    </div>
+                    <h3>Scan</h3>
+                    <p>Open your camera or our app to scan the QR code located on any smart kiosk.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step-card reveal" style="transition-delay: 0.2s;">
+                    <div class="step-icon-wrapper">
+                        <i class="fas fa-bolt step-icon"></i>
+                    </div>
+                    <h3>Charge</h3>
+                    <p>A fully charged power bank automatically ejects. Grab it and head to class.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step-card reveal" style="transition-delay: 0.3s;">
+                    <div class="step-icon-wrapper">
+                        <i class="fas fa-undo step-icon"></i>
+                    </div>
+                    <h3>Return</h3>
+                    <p>Done charging? Simply push the power bank into an empty slot at any station.</p>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Charge + Go. All rights reserved.</p>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // Navbar Scrolled Effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll Reveal Animation
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+
+        window.addEventListener("scroll", reveal);
+        // Trigger once on load
+        reveal();
+        
+        // Ensure video plays on mobile devices (sometimes requires explicit play)
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('hero-video');
+            if (video) {
+                // Play promise handling for modern browsers
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Auto-play was prevented. Adding interaction listener.");
+                        // Optional: add a "Tap to play" button if auto-play fails
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

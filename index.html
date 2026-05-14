@@ -3,145 +3,1012 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Charge + Go | Smart Kiosk Experience</title>
-    <meta name="description" content="Immersive 3D power bank rental experience.">
+    <title>Charge+Go | Smart Power Bank Rental</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@200,400,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/styles.css">
+    
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --container-bg: #0A0A0A;
+            --container-hover: #111111;
+            
+            /* Clean Professional Colors: Blue, Black, White */
+            --accent-blue: #0A84FF; /* Crisp, premium tech blue */
+            --accent-blue-dim: rgba(10, 132, 255, 0.1);
+            
+            --text-main: #FFFFFF;
+            --text-muted: #8E8E93; /* Neutral gray */
+            
+            --border-color: rgba(255, 255, 255, 0.12);
+            --border-highlight: rgba(255, 255, 255, 0.25);
+            
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --card-radius: 12px; /* Sharper, professional corners */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+        }
+
+        /* --- Global Utility --- */
+        .text-blue { color: var(--accent-blue); }
+        .text-white { color: var(--text-main); }
+        .text-center { text-align: center; }
+
+        /* --- Navigation --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 4rem;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a:not(.btn) {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:not(.btn):hover {
+            color: var(--text-main);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px; /* Clean, professional radius */
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-family: var(--font-body);
+        }
+
+        .btn.small {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+        }
+
+        .primary-btn {
+            background: var(--text-main);
+            color: #000;
+        }
+
+        .primary-btn:hover {
+            background: #E5E5EA;
+            transform: translateY(-1px);
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+
+        .secondary-btn:hover {
+            background: var(--container-bg);
+            border-color: var(--text-main);
+        }
+
+        .blue-btn {
+            background: var(--accent-blue);
+            color: #FFF;
+        }
+
+        .blue-btn:hover {
+            background: #0071E3;
+            transform: translateY(-1px);
+        }
+
+        /* --- Canvas Background for Hero --- */
+        #frames-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: #000;
+        }
+
+        #frames-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom, 
+                rgba(0, 0, 0, 0.4) 0%, 
+                rgba(0, 0, 0, 0.7) 70%, 
+                var(--bg-dark) 100%
+            );
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- Main Layout --- */
+        .story-container {
+            position: relative;
+            height: 150vh; /* Scroll room for the canvas frames */
+        }
+
+        .hero-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 5%;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .pill-label {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .headline {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 5vw, 4.5rem); /* Scaled down, professional */
+            line-height: 1.05;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            letter-spacing: -1.5px;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* --- Solid Content Area --- */
+        .solid-bg-wrapper {
+            background-color: var(--bg-dark);
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section-container {
+            padding: 6rem 5%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 3.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- Section 1: System Flow --- */
+        .how-it-works-flow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        /* Connecting line for desktop */
+        .how-it-works-flow::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            right: 50px;
+            height: 1px;
+            background-image: linear-gradient(to right, var(--border-color) 50%, transparent 50%);
+            background-size: 8px 1px;
+            z-index: 0;
+        }
+
+        .flow-step {
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-highlight);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 1.2rem;
+        }
+
+        .flow-step h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-step p {
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        /* Feature Strip */
+        .feature-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            border-radius: var(--card-radius);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-highlight);
+            background: var(--container-hover);
+        }
+
+        .feature-card i {
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .feature-card span {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Story CTA */
+        .story-cta {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-blue);
+            padding: 2rem 2.5rem;
+            border-radius: var(--card-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .story-cta p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        .story-cta strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* --- Section 2: Pricing --- */
+        .deposit-explainer {
+            display: inline-block;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 4rem;
+        }
+
+        .deposit-explainer strong {
+            color: var(--accent-blue);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-card {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--border-highlight);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--accent-blue);
+            background: #0A0F1A; /* Subtle deep blue tint */
+            position: relative;
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            left: 2rem;
+            background: var(--accent-blue);
+            color: #FFF;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .pricing-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .price-val {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .price-val span {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .pricing-desc {
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        /* Payment Strip */
+        .payment-strip {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .pay-pill {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .pay-pill i { color: var(--text-main); }
+
+        .trust-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .trust-row div {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .trust-row div i { color: var(--accent-blue); font-size: 0.8rem;}
+
+        /* --- Section 3: Team --- */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 5rem;
+        }
+
+        .team-card {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 2rem 1.5rem;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .team-card:hover {
+            border-color: var(--border-highlight);
+            background: var(--container-hover);
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #1A1A1A;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .team-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .team-card .role {
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.8rem;
+        }
+
+        .team-card .bio {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* Closing CTA */
+        .closing-banner {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .closing-banner h2 {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 3vw, 2.2rem);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .closing-banner .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* --- Footer --- */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 3rem 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .footer-logo {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-socials a {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-socials a:hover { color: var(--text-main); }
+
+        /* --- Animations & Utilities --- */
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .pricing-grid { grid-template-columns: 1fr; max-width: 500px; margin: 0 auto 3rem auto; }
+            .team-grid { grid-template-columns: repeat(2, 1fr); }
+            .feature-strip { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 5%; }
+            .nav-links { display: none; }
+            .how-it-works-flow { grid-template-columns: 1fr; gap: 2rem; }
+            .how-it-works-flow::before { display: none; }
+            .story-cta { flex-direction: column; text-align: left; align-items: flex-start; }
+            .team-grid { grid-template-columns: 1fr; }
+            .feature-strip { grid-template-columns: 1fr; }
+            .trust-row { flex-direction: column; gap: 0.8rem; align-items: center;}
+            .closing-banner .btn-group { flex-direction: column; width: 100%; max-width: 300px; margin: 0 auto;}
+            .closing-banner .btn-group .btn { width: 100%; }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- WebGL Background -->
-    <div id="webgl-container">
-        <canvas id="webgl-canvas"></canvas>
+    <!-- Dynamic Hero Canvas (Kept intact and linked to GSAP) -->
+    <div id="frames-container">
+        <canvas id="frames-canvas"></canvas>
+        <div class="video-overlay"></div>
     </div>
 
-    <!-- UI Overlay (Always visible) -->
-    <div class="ui-overlay">
-        <div class="ui-header">
-            <a href="#" class="logo" id="nav-home">CHARGE<span>+</span>GO</a>
-            <div class="menu-toggle" id="menu-toggle">MENU</div>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <a href="#" class="logo">CHARGE<span class="text-blue">+GO</span></a>
+        <div class="nav-links">
+            <a href="#system-details">System</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#team">Team</a>
+            <a href="#pricing" class="btn primary-btn small">Get Started</a>
         </div>
+    </nav>
 
-        <div class="nav-menu" id="nav-menu">
-            <a href="#" class="nav-link active" data-target="home">01. HOME</a>
-            <a href="#" class="nav-link" data-target="problem">02. THE PROBLEM</a>
-            <a href="#" class="nav-link" data-target="solution">03. THE SOLUTION</a>
-            <a href="#" class="nav-link" data-target="how">04. HOW IT WORKS</a>
-            <a href="#" class="nav-link" data-target="pricing">05. PRICING</a>
-        </div>
+    <!-- Scroll container for canvas frames -->
+    <div class="story-container" id="story-container">
+        <!-- Hero Section -->
+        <section class="hero-section" id="system">
+            <div class="hero-content text-center">
+                <div class="pill-label">Smart Power Bank Rental &middot; Pakistan's First</div>
+                <h1 class="headline">CHARGE<span class="text-blue">+GO</span></h1>
+                <p class="tagline">PLUG IN &middot; POWER UP &middot; GO</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Solid Content Flow -->
+    <div class="solid-bg-wrapper">
         
-        <div class="ui-footer">
-            <div class="social-links">
+        <!-- SECTION 1: Introduction to System Details -->
+        <section id="system-details" class="section-container">
+            
+            <div class="how-it-works-flow reveal">
+                <div class="flow-step">
+                    <div class="step-circle">01</div>
+                    <h3>SCAN</h3>
+                    <p>Find a Charge+Go kiosk, scan the QR code on any of the 8 slots.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-circle">02</div>
+                    <h3>PAY</h3>
+                    <p>JazzCash or EasyPaisa — no app download, no signup required.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-circle">03</div>
+                    <h3>CHARGE</h3>
+                    <p>Grab your 10,000 mAh power bank (USB-C + Lightning). 2–3 full charges.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-circle">04</div>
+                    <h3>RETURN</h3>
+                    <p>Drop it at ANY Charge+Go kiosk on campus. Deposit refunded instantly.</p>
+                </div>
+            </div>
+
+            <div class="feature-strip reveal">
+                <div class="feature-card">
+                    <i class="fas fa-clock"></i>
+                    <span>24/7 Availability</span>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <span>30-Sec Rental</span>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>No App Needed</span>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Return Anywhere</span>
+                </div>
+            </div>
+
+            <div class="story-cta reveal">
+                <p>Stop sitting on floors. Stop missing quizzes. Stop carrying a dead phone. <strong>Charge+Go is built for students, by students.</strong></p>
+                <a href="#pricing" class="btn blue-btn">See How You Pay &rarr;</a>
+            </div>
+
+        </section>
+
+        <!-- SECTION 2: Payment & Pricing -->
+        <section id="pricing" class="section-container">
+            <div class="text-center reveal">
+                <h2 class="section-title">Pay Your Way. Get 87% Back.</h2>
+                <p class="section-subtitle">Pakistan's first deposit-refund charging service.</p>
+                <div class="deposit-explainer">
+                    Deposit PKR 1,000 &rarr; Get PKR 801 back &rarr; <strong>You pay only PKR 199 per rental.</strong>
+                </div>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Card 1 -->
+                <div class="pricing-card reveal" style="transition-delay: 0.1s;">
+                    <h3>Pay-Per-Use</h3>
+                    <div class="price-val">PKR 199 <span>/ rental</span></div>
+                    <p class="pricing-desc">No commitment. Deposit fully refunded on return.</p>
+                    <a href="#" class="btn secondary-btn" style="width: 100%;">Start Now</a>
+                </div>
+
+                <!-- Card 2 (Featured) -->
+                <div class="pricing-card featured reveal" style="transition-delay: 0.15s;">
+                    <div class="featured-badge">MOST POPULAR</div>
+                    <h3>Monthly Lite</h3>
+                    <div class="price-val text-blue">PKR 1,000 <span>/ month</span></div>
+                    <p class="pricing-desc">10 rentals included. Just PKR 100 per use. Best value for daily users.</p>
+                    <a href="#" class="btn blue-btn" style="width: 100%;">Subscribe</a>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="pricing-card reveal" style="transition-delay: 0.2s;">
+                    <h3>Unlimited</h3>
+                    <div class="price-val">PKR 2,599 <span>/ month</span></div>
+                    <p class="pricing-desc">Unlimited rentals. No deposit ever. Built for power users.</p>
+                    <a href="#" class="btn secondary-btn" style="width: 100%;">Go Unlimited</a>
+                </div>
+            </div>
+
+            <div class="text-center reveal">
+                <div class="payment-strip">
+                    <div class="pay-pill"><i class="fas fa-money-bill-wave"></i> JazzCash</div>
+                    <div class="pay-pill"><i class="fas fa-wallet"></i> EasyPaisa</div>
+                    <div class="pay-pill"><i class="fas fa-exchange-alt"></i> Raast</div>
+                    <div class="pay-pill"><i class="fas fa-credit-card"></i> Debit Card</div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Pay in under 10 seconds. No app. No signup. Just scan.</p>
+                
+                <div class="trust-row">
+                    <div><i class="fas fa-check"></i> PKR 801 Refunded per deposit</div>
+                    <div><i class="fas fa-check"></i> 0 Hidden fees</div>
+                    <div><i class="fas fa-check"></i> 24/7 Support on WhatsApp</div>
+                    <div><i class="fas fa-check"></i> 100% Secure payments</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Meet the Team -->
+        <section id="team" class="section-container">
+            <div class="text-center reveal">
+                <h2 class="section-title">The Team Behind Charge+Go</h2>
+                <p class="section-subtitle">8 students. One mission. Built at PAF-IAST, Haripur.</p>
+            </div>
+
+            <div class="team-grid">
+                <!-- Team Member 1 -->
+                <div class="team-card reveal">
+                    <div class="avatar">A</div>
+                    <h3>Ayan</h3>
+                    <div class="role">Market Strategy Lead</div>
+                    <p class="bio">Steering the vision and go-to-market execution.</p>
+                </div>
+                <!-- Team Member 2 -->
+                <div class="team-card reveal">
+                    <div class="avatar">E</div>
+                    <h3>Eshal</h3>
+                    <div class="role">Research & Validation</div>
+                    <p class="bio">Ensuring every decision is backed by student data.</p>
+                </div>
+                <!-- Team Member 3 -->
+                <div class="team-card reveal">
+                    <div class="avatar">M</div>
+                    <h3>Momna</h3>
+                    <div class="role">Product Design</div>
+                    <p class="bio">Crafting the seamless physical and digital experience.</p>
+                </div>
+                <!-- Team Member 4 -->
+                <div class="team-card reveal">
+                    <div class="avatar">F</div>
+                    <h3>Fahad</h3>
+                    <div class="role">Market Opportunity</div>
+                    <p class="bio">Identifying scalable avenues for hyper-growth.</p>
+                </div>
+                <!-- Team Member 5 -->
+                <div class="team-card reveal">
+                    <div class="avatar">A</div>
+                    <h3>Arooj</h3>
+                    <div class="role">Revenue & Tech Stack</div>
+                    <p class="bio">Optimizing monetization and technical infrastructure.</p>
+                </div>
+                <!-- Team Member 6 -->
+                <div class="team-card reveal">
+                    <div class="avatar">S</div>
+                    <h3>Shareq</h3>
+                    <div class="role">Business Model</div>
+                    <p class="bio">Managing risks and defining sustainable frameworks.</p>
+                </div>
+                <!-- Team Member 7 -->
+                <div class="team-card reveal">
+                    <div class="avatar">H</div>
+                    <h3>Harram</h3>
+                    <div class="role">Expansion</div>
+                    <p class="bio">Forging alliances to bring Charge+Go nationwide.</p>
+                </div>
+                <!-- Team Member 8 -->
+                <div class="team-card reveal">
+                    <div class="avatar">Y</div>
+                    <h3>Yousaf</h3>
+                    <div class="role">Finance & IR</div>
+                    <p class="bio">Securing the capital to fuel our campus revolution.</p>
+                </div>
+            </div>
+
+            <div class="closing-banner reveal">
+                <h2>Ready to never run out of battery again?</h2>
+                <div class="btn-group">
+                    <a href="#system" class="btn primary-btn">Find a Kiosk</a>
+                    <a href="mailto:contact@chargeandgo.pk" class="btn secondary-btn">Contact the Team</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <a href="#" class="footer-logo">CHARGE<span class="text-blue">+GO</span></a>
+            <p style="font-size: 0.85rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase;">Plug In &middot; Power Up &middot; Go</p>
+            <div class="footer-socials">
                 <a href="#"><i class="fab fa-instagram"></i></a>
                 <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
             </div>
-            <div class="progress-indicator">
-                <span id="current-scene-index">01</span> / 05
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loading-screen">
-        <div class="loader-text">POWERING UP CHARGE + GO...</div>
-        <div class="loader-bar"><div class="loader-fill"></div></div>
-    </div>
-
-    <!-- Cinematic Intro Overlay -->
-    <div id="intro-overlay">
-        <div class="intro-caption" id="intro-caption"></div>
-        <button id="intro-skip">SKIP &rarr;</button>
-    </div>
-
-    <!-- Scene Content Overlays -->
-    <div class="scenes-container">
-        
-        <!-- Scene 1: Home -->
-        <div class="scene-content" id="scene-home">
-            <h1 class="hero-title">POWER<br>WHEN YOU<br>NEED IT.</h1>
-            <p class="hero-subtitle">Smart power bank rental for university campuses.</p>
-            <button class="btn-explore" id="btn-explore">EXPLORE EXPERIENCE</button>
-        </div>
-
-        <!-- Scene 2: Problem -->
-        <div class="scene-content" id="scene-problem">
-            <h2 class="scene-title">BATTERY DEAD?</h2>
-            <div class="scene-desc">
-                <p>Libraries and cafes are always packed, finding a wall outlet is nearly impossible.</p>
-                <p>Personal power banks are expensive and heavy to carry.</p>
-                <p>The struggle ends here.</p>
-            </div>
-            <button class="btn-next" data-next="solution">NEXT <i class="fas fa-arrow-right"></i></button>
-        </div>
-
-        <!-- Scene 3: Solution (Kiosk) -->
-        <div class="scene-content" id="scene-solution">
-            <h2 class="scene-title">THE SMART KIOSK</h2>
-            <p class="scene-desc">Our 8-slot smart kiosk offers 24/7 availability with built-in cables.</p>
-            <ul class="features-list">
-                <li><i class="fas fa-bolt"></i> Fast QR Rental</li>
-                <li><i class="fas fa-plug"></i> Built-in USB-C, Lightning, Micro-USB</li>
-                <li><i class="fas fa-map-marker-alt"></i> Pilot: PAF-IAST</li>
-            </ul>
-            <button class="btn-next" data-next="how">NEXT <i class="fas fa-arrow-right"></i></button>
-        </div>
-
-        <!-- Scene 4: How it Works -->
-        <div class="scene-content" id="scene-how">
-            <h2 class="scene-title">3 SIMPLE STEPS</h2>
-            <div class="steps-minimal">
-                <div class="step">
-                    <span class="step-num">01.</span>
-                    <span class="step-text">SCAN QR ON KIOSK</span>
-                </div>
-                <div class="step">
-                    <span class="step-num">02.</span>
-                    <span class="step-text">TAKE EJECTED POWERBANK</span>
-                </div>
-                <div class="step">
-                    <span class="step-num">03.</span>
-                    <span class="step-text">RETURN TO ANY EMPTY SLOT</span>
-                </div>
-            </div>
-            <button class="btn-next" data-next="pricing">NEXT <i class="fas fa-arrow-right"></i></button>
-        </div>
-
-        <!-- Scene 5: Pricing -->
-        <div class="scene-content" id="scene-pricing">
-            <h2 class="scene-title">STUDENT PRICING</h2>
-            <div class="pricing-minimal">
-                <div class="price-item">
-                    <h3>PAY-PER-USE</h3>
-                    <p class="price-val">PKR 200<span>/rental</span></p>
-                </div>
-                <div class="price-item popular">
-                    <div class="pop-badge">POPULAR</div>
-                    <h3>MONTHLY LITE</h3>
-                    <p class="price-val">PKR 700<span>/mo</span></p>
-                </div>
-                <div class="price-item">
-                    <h3>UNLIMITED</h3>
-                    <p class="price-val">PKR 1,100<span>/mo</span></p>
-                </div>
-            </div>
-            <button class="btn-next" data-next="home">BACK TO START <i class="fas fa-undo"></i></button>
-        </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 Charge+Go. Built for PAF-IAST.</p>
+        </footer>
 
     </div>
 
-    <!-- Custom Cursor -->
-    <div class="custom-cursor"></div>
-
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP for scroll animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        // Navbar Scrolled Effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // --- Reveal Animation ---
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 50;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // Trigger once on load
+
+        // --- Canvas Image Sequence Logic ---
+        const canvas = document.getElementById("frames-canvas");
+        const context = canvas.getContext("2d");
+
+        const frameCount = 300;
+        const currentFrame = index => (
+            `assets/frames/ezgif-frame-${(index + 1).toString().padStart(3, '0')}.jpg`
+        );
+
+        const images = [];
+        const frames = { frame: 0 };
+
+        // Preload images
+        for (let i = 0; i < frameCount; i++) {
+            const img = new Image();
+            img.src = currentFrame(i);
+            images.push(img);
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            render();
+        }
+
+        function render() {
+            if (images[frames.frame] && images[frames.frame].complete) {
+                const img = images[frames.frame];
+                
+                // Draw image to cover canvas
+                const canvasRatio = canvas.width / canvas.height;
+                const imgRatio = img.width / img.height;
+                let drawWidth, drawHeight, offsetX, offsetY;
+
+                if (canvasRatio > imgRatio) {
+                    drawWidth = canvas.width;
+                    drawHeight = canvas.width / imgRatio;
+                    offsetX = 0;
+                    offsetY = (canvas.height - drawHeight) / 2;
+                } else {
+                    drawHeight = canvas.height;
+                    drawWidth = canvas.height * imgRatio;
+                    offsetY = 0;
+                    offsetX = (canvas.width - drawWidth) / 2;
+                }
+
+                context.imageSmoothingEnabled = true;
+                context.imageSmoothingQuality = "high";
+                
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+            }
+        }
+
+        images[0].onload = render;
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        // --- GSAP ScrollTrigger Animations ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Scrub canvas frames over the hero section scroll
+        gsap.to(frames, {
+            frame: frameCount - 1,
+            snap: "frame",
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#story-container",
+                start: "top top",
+                end: "bottom top", // Ends when the container scrolls out
+                scrub: 0.5,
+                onUpdate: render
+            }
+        });
+
+    </script>
 </body>
 </html>

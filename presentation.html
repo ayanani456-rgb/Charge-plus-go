@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charge+Go | Interactive Pitch Deck</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0A0F1E;
+            --accent-green: #00D97E;
+            --accent-cyan: #0AFFE0;
+            --text-main: #FFFFFF;
+            --text-muted: #A0AABF;
+            --container-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 120%, rgba(0, 217, 126, 0.1), transparent 50%);
+        }
+
+        .deck-container {
+            width: 95vw;
+            max-width: 1400px;
+            height: 90vh;
+            background-color: var(--bg-dark);
+            border-radius: 32px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(255,255,255,0.02);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Glowing Orb */
+        .orb {
+            position: absolute;
+            top: -150px;
+            right: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 217, 126, 0.15) 0%, rgba(10, 255, 224, 0.05) 40%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(40px);
+        }
+
+        /* Slides Wrapper */
+        .slides-wrapper {
+            flex-grow: 1;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+            padding: 4rem;
+        }
+
+        .slide {
+            position: absolute;
+            top: 4rem;
+            left: 4rem;
+            right: 4rem;
+            bottom: 4rem;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(40px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        /* Slide UI Elements */
+        .speaker-tag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .speaker-tag i { color: var(--accent-cyan); }
+
+        .pill-label {
+            display: inline-block;
+            background: rgba(0, 217, 126, 0.1);
+            color: var(--accent-green);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0, 217, 126, 0.2);
+        }
+
+        .slide-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .slide-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 900px;
+            line-height: 1.5;
+        }
+
+        /* Navigation */
+        .deck-nav {
+            height: 80px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4rem;
+            z-index: 20;
+            background: rgba(10, 15, 30, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            transform: scale(1.05);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .dot.active {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            transform: scale(1.5);
+        }
+
+        /* --- Slide Specific Styles --- */
+        
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        .grid-6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        
+        /* Cards */
+        .card {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
+        
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label { font-size: 1.1rem; color: var(--text-muted); line-height: 1.4; }
+
+        /* Story Box */
+        .story-box {
+            background: rgba(0, 217, 126, 0.05);
+            border-left: 4px solid var(--accent-green);
+            padding: 2rem;
+            border-radius: 0 16px 16px 0;
+            font-size: 1.25rem;
+            line-height: 1.6;
+            margin-top: 2rem;
+        }
+
+        /* Tags Row */
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .tag {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .data-table th, .data-table td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th { color: var(--text-muted); font-weight: 500; font-size: 1.1rem;}
+        .data-table tr.highlight td { background: rgba(0,217,126,0.05); }
+        .data-table tr.highlight td:first-child { border-left: 3px solid var(--accent-green); }
+        .data-table td.brand-col { color: var(--accent-green); font-weight: bold; }
+
+        /* Custom Elements */
+        .brand-hero { text-align: center; margin-top: 4rem; }
+        .brand-hero h1 { font-family: var(--font-display); font-size: 7rem; margin-bottom: 1rem; line-height: 1; text-shadow: 0 0 40px rgba(0, 217, 126, 0.3);}
+        .brand-hero h1 span { color: var(--accent-green); }
+        .brand-hero .tagline { font-size: 1.5rem; letter-spacing: 4px; color: var(--text-muted); margin-bottom: 2rem; }
+        
+        .team-tags { display: flex; justify-content: center; gap: 0.8rem; flex-wrap: wrap; margin-top: 3rem; }
+        .team-tags .tag { font-size: 0.85rem; }
+
+        .callout-box {
+            background: linear-gradient(135deg, rgba(0, 217, 126, 0.1) 0%, rgba(10, 255, 224, 0.1) 100%);
+            border: 1px solid var(--accent-green);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Pricing Cards */
+        .pricing-card { display: flex; flex-direction: column; }
+        .pricing-card.featured {
+            border-color: var(--accent-green);
+            background: linear-gradient(to bottom, rgba(0, 217, 126, 0.05), transparent);
+            position: relative;
+        }
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-green);
+            color: #000;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,217,126,0.3);
+        }
+
+        /* SWOT */
+        .swot-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.5rem; height: 100%; }
+        .swot-card { padding: 1.5rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); background: var(--container-bg); }
+        .swot-card h3 { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1rem; letter-spacing: 1px;}
+        .swot-card ul { list-style: none; color: var(--text-muted); line-height: 1.8; font-size: 1.05rem;}
+        .swot-card ul li::before { content: '— '; color: inherit; font-weight: bold;}
+        .swot-card.s h3 { color: var(--accent-green); }
+        .swot-card.w h3 { color: #FF4D4D; }
+        .swot-card.o h3 { color: var(--accent-cyan); }
+        .swot-card.t h3 { color: #FFB800; }
+
+        /* Road map */
+        .roadmap { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
+        .roadmap-step { display: flex; align-items: flex-start; gap: 1.5rem; }
+        .step-num { 
+            width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent-green); 
+            display: flex; justify-content: center; align-items: center; font-family: var(--font-display); 
+            font-size: 1.2rem; color: var(--accent-green); flex-shrink: 0; background: rgba(0,217,126,0.1);
+        }
+        .step-content h4 { font-size: 1.25rem; margin-bottom: 0.3rem; }
+        .step-content p { color: var(--text-muted); line-height: 1.5; font-size: 1.05rem;}
+
+        /* The Ask */
+        .ask-box {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-radius: 24px;
+            background: radial-gradient(circle at center, rgba(10, 255, 224, 0.15) 0%, transparent 70%);
+            border: 1px solid var(--accent-cyan);
+            margin: 2.5rem 0;
+            box-shadow: 0 0 40px rgba(10, 255, 224, 0.1);
+        }
+        .ask-box h2 { font-family: var(--font-display); font-size: 2.8rem; margin-bottom: 1rem; letter-spacing: -1px;}
+        .ask-box p { font-size: 1.2rem; color: var(--text-muted); max-width: 800px; margin: 0 auto; line-height: 1.6;}
+
+        /* Q&A */
+        .qa-list { display: flex; flex-direction: column; gap: 1.2rem; }
+        .qa-item { background: var(--container-bg); border: 1px solid var(--border-color); padding: 1.5rem 2rem; border-radius: 16px; transition: background 0.3s ease;}
+        .qa-item:hover { background: rgba(255,255,255,0.05); }
+        .qa-q { color: var(--accent-green); font-weight: 600; font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .qa-a { color: rgba(255,255,255,0.8); line-height: 1.6; font-size: 1.1rem;}
+
+        /* Utility */
+        .text-green { color: var(--accent-green); }
+        .text-cyan { color: var(--accent-cyan); }
+        .impact-list { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 2.5rem; font-size: 1.2rem;}
+        .impact-list div { display: flex; align-items: center; gap: 1rem; color: var(--text-muted); }
+        
+        /* Scrollbar for overflow content */
+        .slide::-webkit-scrollbar { width: 8px; }
+        .slide::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px;}
+        .slide::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px;}
+        .slide::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="deck-container">
+        <div class="orb"></div>
+
+        <div class="slides-wrapper" id="slides-wrapper">
+            
+            <!-- Slide 1 — Hero / Opening Story -->
+            <div class="slide active">
+                <div class="brand-hero">
+                    <h1>CHARGE<span class="text-green">+GO</span></h1>
+                    <div class="tagline">PLUG IN &middot; POWER UP &middot; GO</div>
+                    <div class="pill-label" style="background: rgba(255,255,255,0.05); border-color: var(--border-color); color: var(--text-muted); margin-bottom: 0;">Smart Power Bank Rental &middot; PAF-IAST, Haripur</div>
+                </div>
+
+                <div style="max-width: 900px; margin: 0 auto;">
+                    <div class="story-box" style="margin-top: 4rem;">
+                        "It's 2 PM. Ali has a quiz in 10 minutes. His phone is at 5%. All wall sockets are occupied. Students sit on floors, waiting. He panics. He misses the quiz. His day is ruined.<br><br>
+                        <strong style="color: #FF4D4D;">&#9888; THIS IS EVERY STUDENT AT PAF-IAST. EVERY SINGLE DAY.</strong>"
+                    </div>
+
+                    <div class="team-tags">
+                        <div class="tag">Ayan</div>
+                        <div class="tag">Eshal</div>
+                        <div class="tag">Momna</div>
+                        <div class="tag">Fahad</div>
+                        <div class="tag">Arooj</div>
+                        <div class="tag">Shareq</div>
+                        <div class="tag">Harram</div>
+                        <div class="tag">Yousaf</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2 — Competitive Analysis + Market Growth -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Ayan</div>
+                <div class="pill-label">Slide 2 &mdash; Market Analysis</div>
+                <h2 class="slide-title">Competitive Analysis + Market Growth</h2>
+                <p class="slide-subtitle">Global Power Bank Market: USD 1.2B &rarr; USD 3.5B by 2030 &middot; CAGR 16% &middot; Source: Grand View Research 2024</p>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Wall Sockets</th>
+                            <th>Power Bank</th>
+                            <th>Cafe</th>
+                            <th class="brand-col">Charge+Go</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Price</td>
+                            <td>Free (scarce)</td>
+                            <td>PKR 1,500–4,000</td>
+                            <td>PKR 50–100 + buy</td>
+                            <td class="brand-col">PKR 199</td>
+                        </tr>
+                        <tr>
+                            <td>Availability</td>
+                            <td>Very limited</td>
+                            <td>Only if carried</td>
+                            <td>Shop hours only</td>
+                            <td class="brand-col">24/7</td>
+                        </tr>
+                        <tr>
+                            <td>Time</td>
+                            <td>Wait 30+ min</td>
+                            <td>Carry burden</td>
+                            <td>Travel required</td>
+                            <td class="brand-col">30 seconds</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td>Convenience</td>
+                            <td>Low</td>
+                            <td>Medium</td>
+                            <td>Low</td>
+                            <td class="brand-col">HIGH</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="story-box" style="margin-top: 2rem;">
+                    <strong>Problem:</strong> No charging service exists on ANY Pakistani campus. Students have no reliable, affordable solution.
+                </div>
+            </div>
+
+            <!-- Slide 3 — Problem Deep Dive + Impact -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Eshal &middot; 122 PAF-IAST Students Surveyed</div>
+                <div class="pill-label">Slide 3 &mdash; Problem Validation</div>
+                <h2 class="slide-title">Problem Deep Dive + Impact</h2>
+                
+                <div class="grid-4" style="margin-top: 2rem; margin-bottom: 2rem;">
+                    <div class="card">
+                        <div class="stat-value">63%</div>
+                        <div class="stat-label">Cannot find a wall socket on campus</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">50%</div>
+                        <div class="stat-label">Have sat on floors just to charge</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">64%</div>
+                        <div class="stat-label">Missed exams / LMS due to dead battery</div>
+                    </div>
+                    <div class="card" style="border-color: var(--accent-cyan);">
+                        <div class="stat-value text-cyan">0%</div>
+                        <div class="stat-label">Said 'Definitely No' &mdash; Zero rejection!</div>
+                    </div>
+                </div>
+
+                <div class="impact-list">
+                    <div><span>📚</span> <strong>Academic:</strong> Missed quizzes, LMS access, attendance issues</div>
+                    <div><span>💸</span> <strong>Financial:</strong> Forced to buy power banks (PKR 1,500+)</div>
+                    <div><span>⏰</span> <strong>Time:</strong> 30–60 minutes wasted daily waiting</div>
+                    <div><span>⚡</span> <strong>University:</strong> Electricity waste, damaged sockets, constant student complaints</div>
+                </div>
+            </div>
+
+            <!-- Slide 4 — Solution + Value Proposition -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Momna</div>
+                <div class="pill-label">Slide 4 &mdash; Solution</div>
+                <h2 class="slide-title">Solution + Value Proposition</h2>
+                <p class="slide-subtitle">Smart kiosk with 8 &times; 10,000 mAh power banks &mdash; STC, Cafeteria, Library, every block.</p>
+                
+                <div class="callout-box">
+                    <i class="fas fa-wallet text-green" style="margin-right: 10px;"></i> 
+                    Initial deposit: PKR 1,000 &rarr; you get PKR 801 back &rarr; <strong>you pay only PKR 199</strong>
+                </div>
+
+                <div class="grid-4">
+                    <div class="card">
+                        <div class="stat-value text-green">87%</div>
+                        <div class="stat-label">Of deposit returned &mdash; feels almost FREE</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Availability &mdash; no waiting</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">10k<span style="font-size: 1.2rem; color:var(--text-muted);">mAh</span></div>
+                        <div class="stat-label">Capacity &mdash; 2–3 full charges</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">30s</div>
+                        <div class="stat-label">Rental time &mdash; just scan QR</div>
+                    </div>
+                </div>
+
+                <div class="tags-row">
+                    <div class="tag">↩ Return to ANY kiosk</div>
+                    <div class="tag">No app needed &mdash; just QR</div>
+                    <div class="tag">USB-C + Lightning</div>
+                    <div class="tag">Deposit-refund model &mdash; FIRST in Pakistan</div>
+                    <div class="tag text-green" style="border-color: var(--accent-green)">First in Pakistan</div>
+                </div>
+            </div>
+
+            <!-- Slide 5 — Market Validation + Opportunity -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Fahad &middot; 122 Students Surveyed</div>
+                <div class="pill-label">Slide 5 &mdash; Market Opportunity</div>
+                <h2 class="slide-title">Market Validation + Opportunity</h2>
+                
+                <div class="grid-6" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="stat-value">130M+</div>
+                        <div class="stat-label">Mobile users &middot; PTA 2024</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">2.5M</div>
+                        <div class="stat-label">University students &middot; HEC Pakistan</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">200+</div>
+                        <div class="stat-label">Universities in Pakistan</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">16%</div>
+                        <div class="stat-label">Global CAGR &middot; Power Banks</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">25%</div>
+                        <div class="stat-label">Digital payments growth &middot; SBP</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">65%</div>
+                        <div class="stat-label">Smartphone penetration by 2028</div>
+                    </div>
+                </div>
+
+                <div class="story-box" style="margin-top: 2.5rem;">
+                    <strong>Key Insight:</strong> 130M+ mobile users + 0 campus charging solutions = <strong class="text-green">BLUE OCEAN MARKET</strong>
+                </div>
+            </div>
+
+            <!-- Slide 6 — Revenue Streams + Tech Stack -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Arooj</div>
+                <div class="pill-label">Slide 6 &mdash; Revenue + Tech</div>
+                <h2 class="slide-title">Revenue Streams + Tech Stack</h2>
+                
+                <div class="grid-3" style="margin-top: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card pricing-card">
+                        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1rem;">Pay-Per-Use</h3>
+                        <div class="stat-value" style="font-size: 2.5rem;">PKR 199 <span style="font-size: 1rem; color: var(--text-muted); font-family: var(--font-body)">/ rental</span></div>
+                        <div class="stat-label">No commitment. Deposit refunded on return.</div>
+                    </div>
+                    <div class="card pricing-card featured">
+                        <div class="featured-badge">MOST POPULAR</div>
+                        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent-green)">Monthly Lite</h3>
+                        <div class="stat-value text-green" style="font-size: 2.5rem;">PKR 1,450 <span style="font-size: 1rem; color: var(--text-muted); font-family: var(--font-body)">/ month</span></div>
+                        <div class="stat-label">10 rentals. PKR 145 per use. Best value.</div>
+                    </div>
+                    <div class="card pricing-card">
+                        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1rem;">Unlimited</h3>
+                        <div class="stat-value" style="font-size: 2.5rem;">PKR 2,599 <span style="font-size: 1rem; color: var(--text-muted); font-family: var(--font-body)">/ month</span></div>
+                        <div class="stat-label">Unlimited rentals. No deposit ever. Power users.</div>
+                    </div>
+                </div>
+
+                <div class="tags-row" style="margin-top: 0; margin-bottom: 1.5rem;">
+                    <div class="tag">+ Screen Ads PKR 5K–10K/mo</div>
+                    <div class="tag">+ Keep-It Sales PKR 1,500</div>
+                    <div class="tag">QR + JazzCash/EasyPaisa</div>
+                    <div class="tag">WhatsApp Business</div>
+                    <div class="tag">Cloud Dashboard</div>
+                </div>
+
+                <div style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; background: rgba(255,255,255,0.03); padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <strong>Funds distribution (PKR 200,000):</strong> Kiosk Machine 57.5% &middot; Shipping from China 12.5% &middot; Power Banks (10 units) 15% &middot; Installation 5% &middot; App Development 7.5% &middot; Working Capital 2.5%
+                </div>
+            </div>
+
+            <!-- Slide 7 — SWOT Analysis + Business Model -->
+            <div class="slide" style="overflow-y: auto;">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Shareq</div>
+                <div class="pill-label">Slide 7 &mdash; SWOT + Business Model</div>
+                <h2 class="slide-title" style="margin-bottom: 1.5rem;">SWOT Analysis + Business Model</h2>
+                
+                <div class="swot-grid" style="margin-bottom: 2rem;">
+                    <div class="swot-card s">
+                        <h3>STRENGTHS</h3>
+                        <ul>
+                            <li>First-mover in Pakistan's campus market</li>
+                            <li>Unique deposit-refund model</li>
+                            <li>122 survey responses validating demand</li>
+                            <li>8-member passionate student team</li>
+                            <li>MoU with PAF-IAST &mdash; location lock-in</li>
+                            <li>Near-zero customer acquisition cost</li>
+                        </ul>
+                    </div>
+                    <div class="swot-card w">
+                        <h3>WEAKNESSES</h3>
+                        <ul>
+                            <li>High upfront hardware cost (PKR 115k)</li>
+                            <li>Institutional dependency on university</li>
+                            <li>Nascent brand identity</li>
+                            <li>Specialized maintenance required</li>
+                            <li>Hardware depreciation (12–18 months)</li>
+                            <li>Limited to university rules</li>
+                        </ul>
+                    </div>
+                    <div class="swot-card o">
+                        <h3>OPPORTUNITIES</h3>
+                        <ul>
+                            <li>Scale to 200+ universities nationwide</li>
+                            <li>Malls, hospitals, bus terminals</li>
+                            <li>Kiosk screen advertising revenue</li>
+                            <li>HEC Digital Campus grants</li>
+                            <li>Franchise model by Year 3</li>
+                            <li>Regional export &mdash; Central Asia & Africa</li>
+                        </ul>
+                    </div>
+                    <div class="swot-card t">
+                        <h3>THREATS</h3>
+                        <ul>
+                            <li>Improving phone battery technology</li>
+                            <li>Cheap personal power banks</li>
+                            <li>Slow university bureaucracy</li>
+                            <li>Power outages & Wi-Fi instability</li>
+                            <li>Copycat competitors</li>
+                            <li>Asset shrinkage (theft / damage)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tags-row" style="margin-top: 0;">
+                    <div class="tag">B2C &mdash; Direct rentals & subscriptions to students</div>
+                    <div class="tag">B2B &mdash; University revenue share 10–15%</div>
+                    <div class="tag">B2G &mdash; HEC Digital Campus grants (future)</div>
+                </div>
+            </div>
+
+            <!-- Slide 8 — Customer Segments + Expansion Road Map -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Harram</div>
+                <div class="pill-label">Slide 8 &mdash; Segments + Road Map</div>
+                <h2 class="slide-title">Customer Segments + Expansion Road Map</h2>
+                
+                <div class="roadmap">
+                    <div class="roadmap-step">
+                        <div class="step-num">01</div>
+                        <div class="step-content">
+                            <h4>PAF-IAST, Haripur &middot; Months 1–6</h4>
+                            <p>1 pilot kiosk. Validate model. Launch. Primary market: 2,000+ students.</p>
+                        </div>
+                    </div>
+                    <div class="roadmap-step">
+                        <div class="step-num">02</div>
+                        <div class="step-content">
+                            <h4>KPK Universities &middot; Months 7–14</h4>
+                            <p>2–3 universities across KPK. Secondary: hostel residents &mdash; most loyal monthly subscribers.</p>
+                        </div>
+                    </div>
+                    <div class="roadmap-step">
+                        <div class="step-num">03</div>
+                        <div class="step-content">
+                            <h4>Major Cities &middot; Year 2</h4>
+                            <p>Lahore, Karachi, Islamabad, Peshawar. Tertiary: 200+ universities via HEC network.</p>
+                        </div>
+                    </div>
+                    <div class="roadmap-step">
+                        <div class="step-num">04</div>
+                        <div class="step-content">
+                            <h4>National Network &middot; Year 3+</h4>
+                            <p>50+ campuses, malls, hospitals, bus terminals.</p>
+                        </div>
+                    </div>
+                    <div class="roadmap-step">
+                        <div class="step-num">05</div>
+                        <div class="step-content">
+                            <h4>International &middot; Year 5+</h4>
+                            <p>Central Asia and Africa.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tags-row">
+                    <div class="tag text-cyan" style="border-color: var(--accent-cyan)">Month 1: Launch pilot</div>
+                    <div class="tag text-cyan" style="border-color: var(--accent-cyan)">Month 2: Break-even</div>
+                    <div class="tag text-cyan" style="border-color: var(--accent-cyan)">Month 12: PKR 15L profit</div>
+                    <div class="tag text-cyan" style="border-color: var(--accent-cyan)">Year 2: 3 cities</div>
+                    <div class="tag text-cyan" style="border-color: var(--accent-cyan)">Year 3: 50+ locations</div>
+                </div>
+            </div>
+
+            <!-- Slide 9 — Financial Model + The Ask -->
+            <div class="slide">
+                <div class="speaker-tag"><i class="fas fa-microphone"></i> Yousaf</div>
+                <div class="pill-label">Slide 9 &mdash; Financial Model + The Ask</div>
+                <h2 class="slide-title">Financial Model + The Ask</h2>
+                
+                <div class="grid-2" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="stat-value text-green">PKR 4,776</div>
+                        <div class="stat-label">Daily profit &middot; 24 rentals &times; PKR 199</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">~42 Days</div>
+                        <div class="stat-label">Break-even &middot; PKR 200k &divide; PKR 4,776</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value text-cyan">PKR 15L</div>
+                        <div class="stat-label">Year 1 profit from ONE kiosk</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-value">750%</div>
+                        <div class="stat-label">ROI in Year 1</div>
+                    </div>
+                </div>
+
+                <div class="ask-box">
+                    <h2>We seek from BIC Seed Fund &mdash; PKR 200,000</h2>
+                    <p>To launch our pilot kiosk at PAF-IAST, Haripur. Not a loan &mdash; a PARTNERSHIP. We are selling peace of mind.</p>
+                </div>
+
+                <div class="tags-row" style="justify-content: center;">
+                    <div class="tag">First-mover in Pakistan</div>
+                    <div class="tag">Break-even ~42 days</div>
+                    <div class="tag">Scalable to 200+ universities</div>
+                    <div class="tag">Passionate student-led team</div>
+                </div>
+            </div>
+
+            <!-- Slide 10 — Q&A + Closing -->
+            <div class="slide" style="overflow-y: auto;">
+                <div class="pill-label">Slide 10 &mdash; Q&A + Closing</div>
+                <h2 class="slide-title" style="margin-bottom: 2rem;">Questions & Answers</h2>
+                
+                <div class="qa-list">
+                    <div class="qa-item">
+                        <div class="qa-q">Q: What if a student doesn't return the power bank?</div>
+                        <div class="qa-a">A: We keep the full PKR 1,000 deposit. Our cost is PKR 1,100–1,300. We still profit.</div>
+                    </div>
+                    <div class="qa-item">
+                        <div class="qa-q">Q: Do students need to download an app?</div>
+                        <div class="qa-a">A: No. Just scan the QR code and pay via JazzCash or EasyPaisa.</div>
+                    </div>
+                    <div class="qa-item">
+                        <div class="qa-q">Q: What if someone damages the power bank?</div>
+                        <div class="qa-a">A: Minor scratches &mdash; full refund. Major damage &mdash; deducted from deposit.</div>
+                    </div>
+                    <div class="qa-item">
+                        <div class="qa-q">Q: Is PKR 199 too expensive for students?</div>
+                        <div class="qa-a">A: 86% said they'd pay PKR 100–200. Plus 87% of deposit comes back. It feels free.</div>
+                    </div>
+                    <div class="qa-item">
+                        <div class="qa-q">Q: What about free wall sockets?</div>
+                        <div class="qa-a">A: 63% can't find one. We save 30–60 minutes of daily waiting.</div>
+                    </div>
+                </div>
+
+                <div class="brand-hero" style="margin-top: 3rem; padding-bottom: 2rem;">
+                    <h1 style="font-size: 5rem;">CHARGE<span class="text-green">+GO</span></h1>
+                    <div class="tagline" style="font-size: 1.1rem; letter-spacing: 2px;">PAF-IAST IS WHERE WE START &middot; PAKISTAN IS WHERE WE SCALE <br><br> PLUG IN &middot; POWER UP &middot; GO</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="deck-nav">
+            <button class="nav-btn" id="prevBtn" disabled><i class="fas fa-chevron-left"></i></button>
+            <div class="dots" id="dotsContainer">
+                <!-- Dots generated by JS -->
+            </div>
+            <button class="nav-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dotsContainer = document.getElementById('dotsContainer');
+        
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        // Initialize dots
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
+        }
+        const dots = document.querySelectorAll('.dot');
+
+        function updateUI() {
+            // Update slides
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                    // Reset scroll position if slide is scrollable
+                    slide.scrollTop = 0;
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            // Update dots
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+
+            // Update buttons
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < totalSlides) {
+                currentSlide = index;
+                updateUI();
+            }
+        }
+
+        prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
+        nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
+                goToSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft') {
+                goToSlide(currentSlide - 1);
+            }
+        });
+    </script>
+</body>
+</html>
