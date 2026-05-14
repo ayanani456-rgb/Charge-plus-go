@@ -671,6 +671,42 @@
             .closing-banner .btn-group { flex-direction: column; width: 100%; max-width: 300px; margin: 0 auto;}
             .closing-banner .btn-group .btn { width: 100%; }
         }
+
+        /* --- Dynamic Glow Cards --- */
+        .glow-card {
+            position: relative;
+            overflow: hidden;
+            /* Enhance 3D tilt effect if added via JS */
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        .glow-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 0) var(--mouse-y, 0), 
+                rgba(10, 132, 255, 0.12),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .glow-card:hover::before {
+            opacity: 1;
+        }
+        .glow-card > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Disable CSS reveal transition since GSAP handles it now */
+        .reveal {
+            opacity: 0;
+        }
+        
     </style>
 </head>
 <body>
@@ -918,21 +954,58 @@
             }
         });
 
-        // --- Reveal Animation ---
-        function reveal() {
-            var reveals = document.querySelectorAll(".reveal");
-            for (var i = 0; i < reveals.length; i++) {
-                var windowHeight = window.innerHeight;
-                var elementTop = reveals[i].getBoundingClientRect().top;
-                var elementVisible = 50;
+        // --- GSAP Advanced Staggered Reveals ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Batch reveals for a cool staggered entry effect
+        ScrollTrigger.batch(".reveal", {
+            onEnter: batch => gsap.to(batch, {opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "power3.out"}),
+            onLeaveBack: batch => gsap.set(batch, {opacity: 0, y: 30}),
+            start: "top 85%"
+        });
+
+        // --- Interactive Magnetic Glow Cards ---
+        document.querySelectorAll('.pricing-card, .team-card, .feature-card, .story-cta').forEach(card => {
+            card.classList.add('glow-card');
+            
+            // Mouse track for the radial gradient
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+
+            // Subtle 3D tilt effect on hover
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
                 
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
-                }
-            }
-        }
-        window.addEventListener("scroll", reveal);
-        reveal(); // Trigger once on load
+                const rotateX = ((y - centerY) / centerY) * -4; // Max 4 deg tilt
+                const rotateY = ((x - centerX) / centerX) * 4;
+                
+                gsap.to(card, {
+                    duration: 0.4,
+                    rotationX: rotateX,
+                    rotationY: rotateY,
+                    transformPerspective: 1000,
+                    ease: "power1.out"
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.8,
+                    rotationX: 0,
+                    rotationY: 0,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            });
+        });
 
         // --- Canvas Image Sequence Logic ---
         const canvas = document.getElementById("frames-canvas");
